@@ -17,7 +17,7 @@ class XAMPPControlPanel:
         self.config = configparser.ConfigParser()
         self.config.read(config_file)
 
-        self.bg_original_image = Image.open("icons/bg.jpg")
+        self.bg_original_image = Image.open("icons/background.png")
         self.bg_image = self.resize_bg_image()
         self.bg_image_tk = ImageTk.PhotoImage(self.bg_image)
 
