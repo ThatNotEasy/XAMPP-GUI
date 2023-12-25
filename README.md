@@ -15,9 +15,7 @@ git clone https://github.com/ThatNotEasy/XAMPP-GUI
 2. Install the required Python packages:
 
 ```
-pip install tkinter
-pip install configparser
-pip install pillow
+pip install -r requirements.txt
 ```
 
 3. Run the script:
