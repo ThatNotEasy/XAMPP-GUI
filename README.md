@@ -9,7 +9,8 @@ To run this script, you will need the following:
 * Python 3 or later
 * Tkinter library
 * Pillow library
-* XAMPP installed on your system
+* XAMPP & Nginx installed on your system
+* 
 
 ## Installation
 
