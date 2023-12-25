@@ -1,9 +1,11 @@
 import subprocess
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk, messagebox, Text
 from functools import partial
 from PIL import Image, ImageTk, ImageDraw
 import configparser
+import sys
+import threading
 
 class XAMPPControlPanel:
     ICON_SIZE = (40, 40)
@@ -13,7 +15,6 @@ class XAMPPControlPanel:
         master.title("XAMPP Control Panel")
         master.geometry("700x600")
 
-        # Read configuration from config.ini
         self.config = configparser.ConfigParser()
         self.config.read(config_file)
 
@@ -40,21 +41,31 @@ class XAMPPControlPanel:
 
         master.bind("<Configure>", self.on_window_resize)
 
+        # Create and place the log_text widget
+        self.log_text = Text(master, wrap='word', state='disabled', height=8)
+        self.log_text.pack(fill="both", expand=True)
+
+        sys.stdout = TextRedirector(self.log_text, "stdout")
+        sys.stderr = TextRedirector(self.log_text, "stderr")
+
     def start_component(self, component):
         command = self.config[component]["start_command"].split()
-        self.execute_command(component, command, True, f"{component} started successfully.")
+        threading.Thread(target=self.execute_command, args=(component, command, True, f"{component} started successfully.")).start()
 
     def stop_component(self, component):
         command = self.config[component]["stop_command"].split()
-        self.execute_command(component, command, False, f"{component} stopped successfully.")
+        threading.Thread(target=self.execute_command, args=(component, command, False, f"{component} stopped successfully.")).start()
 
     def execute_command(self, component, command, running, success_message):
         try:
-            subprocess.run(command, check=True)
+            result = subprocess.run(command, check=True, capture_output=True, text=True)
+            self.log_text.insert('end', f"Command Output ({component}):\n{result.stdout}\n")
+
             self.update_status(component, running)
             self.update_global_status()
             self.show_message(success_message)
-        except subprocess.CalledProcessError:
+        except subprocess.CalledProcessError as e:
+            self.log_text.insert('end', f"Error ({component}):\n{e.stderr}\n")
             self.show_message(f"Failed to {'' if running else 'stop '} {component}.")
 
     def create_circular_icon(self, img_path):
@@ -144,6 +155,19 @@ class XAMPPControlPanel:
     @property
     def bg_height(self):
         return self.bg_image.height
+
+class TextRedirector(object):
+    def __init__(self, widget, tag="stdout"):
+        self.widget = widget
+        self.tag = tag
+
+    def write(self, str):
+        self.widget.configure(state='normal')
+        self.widget.insert('end', str, (self.tag,))
+        self.widget.configure(state='disabled')
+
+    def flush(self):
+        pass
 
 def main():
     root = tk.Tk()
