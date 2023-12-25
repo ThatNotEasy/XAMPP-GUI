@@ -9,7 +9,7 @@ To install the XAMPP Control Panel, follow these steps:
 1. Clone the repository:
 
 ```
-git clone https://github.com/username/xampp-control-panel.git
+git clone https://github.com/ThatNotEasy/XAMPP-GUI
 ```
 
 2. Install the required Python packages:
